@@ -183,10 +183,10 @@ class MonthlyMeetBot:
         
         if user_data.get('partner_id') and user_data.get('pair_id'):
             partner_data = self.get_user_data(user_data['partner_id'])
-            
+
             status_text = (
                 f"📊 *Твой статус:*\n\n"
-                f"👥 Пара с @{partner_data['username']}"
+                f"👥 Пара с \\@{partner_data['username']}"
             )
             
             await update.message.reply_text(status_text, parse_mode='MarkdownV2')
