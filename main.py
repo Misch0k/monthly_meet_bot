@@ -186,10 +186,10 @@ class MonthlyMeetBot:
             
             status_text = (
                 f"📊 *Твой статус:*\n\n"
-                f"👥 Пара с @{partner_data['username']}\n"
+                f"👥 Пара с @{partner_data['username']}"
             )
             
-            await update.message.reply_text(status_text, parse_mode='markdown')
+            await update.message.reply_text(status_text, parse_mode='MarkdownV2')
         else:
             await update.message.reply_text(
                 "❌ Ты еще не в паре\n\n"
