@@ -185,11 +185,11 @@ class MonthlyMeetBot:
             partner_data = self.get_user_data(user_data['partner_id'])
 
             status_text = (
-                f"📊 *Твой статус:*\n\n"
+                f"📊 <b>Твой статус:<b>\n\n"
                 f"👥 Пара с \\@{partner_data['username']}"
             )
             
-            await update.message.reply_text(status_text, parse_mode='markdown')
+            await update.message.reply_text(status_text, parse_mode='HTML')
         else:
             await update.message.reply_text(
                 "❌ Ты еще не в паре\n\n"
