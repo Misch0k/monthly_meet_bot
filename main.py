@@ -562,7 +562,13 @@ class MonthlyMeetBot:
 
     def run(self):
         """Синхронный запуск бота"""
-        application = Application.builder().token(self.token).build()
+        # application = Application.builder().token(self.token).build()
+
+        application = (
+            Application.builder()
+            .token(self.token)
+            .build()
+        )
         
         application.add_handler(CommandHandler("start", self.start))
         application.add_handler(CommandHandler("partner", self.partner_command))
@@ -591,9 +597,15 @@ class MonthlyMeetBot:
         else:
             logger.error("❌ JobQueue не доступен! Планирование не будет работать")
 
+        # application.run_polling(
+        #     drop_pending_updates=True,
+        #     allowed_updates=Update.ALL_TYPES
+        # )
+
         application.run_polling(
             drop_pending_updates=True,
-            allowed_updates=Update.ALL_TYPES
+            allowed_updates=Update.ALL_TYPES,
+            close_loop=False
         )
 
 if __name__ == "__main__":
