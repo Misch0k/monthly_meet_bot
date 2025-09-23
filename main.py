@@ -186,7 +186,7 @@ class MonthlyMeetBot:
 
             status_text = (
                 f"📊 <b>Твой статус:</b>\n\n"
-                f"👥 Пара с \\@{partner_data['username']}"
+                f"👥 Пара с @{partner_data['username']}"
             )
             
             await update.message.reply_text(status_text, parse_mode='HTML')
