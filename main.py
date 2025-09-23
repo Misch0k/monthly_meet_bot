@@ -185,7 +185,7 @@ class MonthlyMeetBot:
             partner_data = self.get_user_data(user_data['partner_id'])
 
             status_text = (
-                f"📊 <b>Твой статус:<b>\n\n"
+                f"📊 <b>Твой статус:</b>\n\n"
                 f"👥 Пара с \\@{partner_data['username']}"
             )
             
