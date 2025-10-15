@@ -80,14 +80,22 @@ class MonthlyMeetBot:
     
     def set_pair_data(self, pair_id, data):
         self.redis_client.set(f'pair:{pair_id}', json.dumps(data))
-
+    
     def get_all_pairs(self):
         """Получить все пары"""
         pairs = []
         for key in self.redis_client.scan_iter('pair:*'):
-            pair_data = self.get_pair_data(key.decode().split(':')[1])
+            if isinstance(key, bytes):
+                key_str = key.decode('utf-8')
+            else:
+                key_str = str(key)
+            
+            pair_id = key_str.split(':', 1)[1] if ':' in key_str else key_str
+            pair_data = self.get_pair_data(pair_id)
+
             if pair_data:
                 pairs.append(pair_data)
+        
         return pairs
     
     def get_user_by_username(self, username):
@@ -576,14 +584,14 @@ class MonthlyMeetBot:
         if hasattr(application, 'job_queue') and application.job_queue:
             application.job_queue.run_monthly(
                 self.monthly_planning,
-                when=time(hour=11, minute=55),
+                when=time(hour=12, minute=5),
                 day=15,
                 name="monthly_planning"
             )
             
             application.job_queue.run_daily(
                 self.check_and_send_pending_notifications,
-                time=time(hour=12, minute=0),
+                time=time(hour=12, minute=7),
                 name="daily_notification_check"
             )
             
