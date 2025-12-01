@@ -702,14 +702,14 @@ class MonthlyMeetBot:
         if hasattr(application, 'job_queue') and application.job_queue:
             application.job_queue.run_monthly(
                 self.monthly_planning,
-                when=time(hour=13, minute=5),
+                when=time(hour=5, minute=55),
                 day=1,
                 name="monthly_planning"
             )
             
             application.job_queue.run_daily(
                 self.check_and_send_pending_notifications,
-                time=time(hour=13, minute=6),
+                time=time(hour=6, minute=0),
                 name="daily_notification_check"
             )
             
