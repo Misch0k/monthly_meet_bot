@@ -83,6 +83,17 @@ class MonthlyMeetBot:
         except redis.ConnectionError as e:
             logger.error(f"❌ Ошибка подключения Redis: {e}")
 
+    async def keep_redis_awake(self, context: ContextTypes.DEFAULT_TYPE = None):
+        try:
+            if self.redis_client:
+                self.redis_client.ping()
+                logger.info("✅ Redis ping successful")
+                return True
+        except Exception as e:
+            logger.warning(f"⚠️ Redis ping failed: {e}")
+            self.connect_redis()
+            return False
+
     # def ensure_redis_connection(self):
     #     if not self.redis_client:
     #         logger.warning("⚠️ Соединение с Redis потеряно, переподключаемся...")
@@ -700,7 +711,7 @@ class MonthlyMeetBot:
         if hasattr(application, 'job_queue') and application.job_queue:
             
             application.job_queue.run_monthly(
-                self.connect_redis,
+                self.keep_redis_awake,
                 when=time(hour=5, minute=50),
                 day=1,
                 name="ping_monthly_planning"
@@ -714,14 +725,14 @@ class MonthlyMeetBot:
             )
 
             application.job_queue.run_daily(
-                self.connect_redis,
-                time=time(hour=20, minute=7),
+                self.keep_redis_awake,
+                time=time(hour=20, minute=15),
                 name="ping_daily_notification_check"
             )
             
             application.job_queue.run_daily(
                 self.check_and_send_pending_notifications,
-                time=time(hour=20, minute=8),
+                time=time(hour=20, minute=16),
                 name="daily_notification_check"
             )
             
