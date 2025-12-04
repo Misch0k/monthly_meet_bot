@@ -48,7 +48,7 @@ class MonthlyMeetBot:
     def __init__(self):
         self.token = os.getenv('BOT_TOKEN')
         self.redis_url = os.getenv('REDIS_URL')
-        self.redis_client = redis.Redis.from_url(
+        self.redis_client = redis.from_url(
             self.redis_url,
             socket_connect_timeout=10,
             socket_timeout=10,
@@ -78,148 +78,146 @@ class MonthlyMeetBot:
         
     def connect_redis(self):
         try:
-            self.redis_client = redis.from_url(self.redis_url)
             self.redis_client.ping()
             logger.info("✅ Redis подключение успешно")
         except redis.ConnectionError as e:
             logger.error(f"❌ Ошибка подключения Redis: {e}")
-            self.redis_client = None
 
-    def ensure_redis_connection(self):
-        if not self.redis_client:
-            logger.warning("⚠️ Соединение с Redis потеряно, переподключаемся...")
-            self.connect_redis()
-            return False
+    # def ensure_redis_connection(self):
+    #     if not self.redis_client:
+    #         logger.warning("⚠️ Соединение с Redis потеряно, переподключаемся...")
+    #         self.connect_redis()
+    #         return False
         
-        self.redis_client.ping()
-        return True
+    #     self.redis_client.ping()
+    #     return True
     
 
-    def get_user_data(self, user_id):
-        if not self.ensure_redis_connection():
-            logger.error("❌ Нет соединения с Redis")
-            return None
-        
-        try:
-            data = self.redis_client.get(f'user:{user_id}')
-            return json.loads(data) if data else None
-        except redis.ConnectionError:
-            self.connect_redis()
-            return None
-
-    def set_user_data(self, user_id, data):
-        if not self.ensure_redis_connection():
-            return False
-        
-        try:
-            self.redis_client.set(f'user:{user_id}', json.dumps(data))
-            return True
-        except redis.ConnectionError:
-            self.connect_redis()
-            return False
-
-    def get_pair_data(self, pair_id):
-        if not self.ensure_redis_connection():
-            return None
-        
-        try:
-            data = self.redis_client.get(f'pair:{pair_id}')
-            return json.loads(data) if data else None
-        except redis.ConnectionError:
-            self.connect_redis()
-            return None
-
-    def set_pair_data(self, pair_id, data):
-        if not self.ensure_redis_connection():
-            return False
-        
-        try:
-            self.redis_client.set(f'pair:{pair_id}', json.dumps(data))
-            return True
-        except redis.ConnectionError:
-            self.connect_redis()
-            return False
-
-    def get_all_pairs(self):
-        if not self.ensure_redis_connection():
-            return []
-        
-        pairs = []
-        try:
-            for key in self.redis_client.scan_iter('pair:*'):
-                if isinstance(key, bytes):
-                    key_str = key.decode('utf-8')
-                else:
-                    key_str = str(key)
-                
-                pair_id = key_str.split(':', 1)[1] if ':' in key_str else key_str
-                pair_data = self.get_pair_data(pair_id)
-
-                if pair_data:
-                    pairs.append(pair_data)
-            
-            return pairs
-        except redis.ConnectionError:
-            self.connect_redis()
-            return []
-        
-    def get_user_by_username(self, username):
-        if not self.ensure_redis_connection():
-            return None
-        
-        try:
-            username = username.lower().replace('@', '')
-            for key in self.redis_client.scan_iter('user:*'):
-                user_data = json.loads(self.redis_client.get(key))
-                if user_data.get('username', '').lower().replace('@', '') == username:
-                    return user_data
-            return None
-        except redis.ConnectionError:
-            self.connect_redis()
-            return False
-
-
-
-        
     # def get_user_data(self, user_id):
-    #     data = self.redis_client.get(f'user:{user_id}')
-    #     return json.loads(data) if data else None
-    
-    # def set_user_data(self, user_id, data):
-    #     self.redis_client.set(f'user:{user_id}', json.dumps(data))
-    
-    # def get_pair_data(self, pair_id):
-    #     data = self.redis_client.get(f'pair:{pair_id}')
-    #     return json.loads(data) if data else None
-    
-    # def set_pair_data(self, pair_id, data):
-    #     self.redis_client.set(f'pair:{pair_id}', json.dumps(data))
-    
-    # def get_all_pairs(self):
-    #     """Получить все пары"""
-    #     pairs = []
-    #     for key in self.redis_client.scan_iter('pair:*'):
-    #         if isinstance(key, bytes):
-    #             key_str = key.decode('utf-8')
-    #         else:
-    #             key_str = str(key)
-            
-    #         pair_id = key_str.split(':', 1)[1] if ':' in key_str else key_str
-    #         pair_data = self.get_pair_data(pair_id)
-
-    #         if pair_data:
-    #             pairs.append(pair_data)
+    #     if not self.ensure_redis_connection():
+    #         logger.error("❌ Нет соединения с Redis")
+    #         return None
         
-    #     return pairs
-    
+    #     try:
+    #         data = self.redis_client.get(f'user:{user_id}')
+    #         return json.loads(data) if data else None
+    #     except redis.ConnectionError:
+    #         self.connect_redis()
+    #         return None
+
+    # def set_user_data(self, user_id, data):
+    #     if not self.ensure_redis_connection():
+    #         return False
+        
+    #     try:
+    #         self.redis_client.set(f'user:{user_id}', json.dumps(data))
+    #         return True
+    #     except redis.ConnectionError:
+    #         self.connect_redis()
+    #         return False
+
+    # def get_pair_data(self, pair_id):
+    #     if not self.ensure_redis_connection():
+    #         return None
+        
+    #     try:
+    #         data = self.redis_client.get(f'pair:{pair_id}')
+    #         return json.loads(data) if data else None
+    #     except redis.ConnectionError:
+    #         self.connect_redis()
+    #         return None
+
+    # def set_pair_data(self, pair_id, data):
+    #     if not self.ensure_redis_connection():
+    #         return False
+        
+    #     try:
+    #         self.redis_client.set(f'pair:{pair_id}', json.dumps(data))
+    #         return True
+    #     except redis.ConnectionError:
+    #         self.connect_redis()
+    #         return False
+
+    # def get_all_pairs(self):
+    #     if not self.ensure_redis_connection():
+    #         return []
+        
+    #     pairs = []
+    #     try:
+    #         for key in self.redis_client.scan_iter('pair:*'):
+    #             if isinstance(key, bytes):
+    #                 key_str = key.decode('utf-8')
+    #             else:
+    #                 key_str = str(key)
+                
+    #             pair_id = key_str.split(':', 1)[1] if ':' in key_str else key_str
+    #             pair_data = self.get_pair_data(pair_id)
+
+    #             if pair_data:
+    #                 pairs.append(pair_data)
+            
+    #         return pairs
+    #     except redis.ConnectionError:
+    #         self.connect_redis()
+    #         return []
+        
     # def get_user_by_username(self, username):
-    #     """Найти пользователя по username"""
-    #     username = username.lower().replace('@', '')
-    #     for key in self.redis_client.scan_iter('user:*'):
-    #         user_data = json.loads(self.redis_client.get(key))
-    #         if user_data.get('username', '').lower().replace('@', '') == username:
-    #             return user_data
-    #     return None
+    #     if not self.ensure_redis_connection():
+    #         return None
+        
+    #     try:
+    #         username = username.lower().replace('@', '')
+    #         for key in self.redis_client.scan_iter('user:*'):
+    #             user_data = json.loads(self.redis_client.get(key))
+    #             if user_data.get('username', '').lower().replace('@', '') == username:
+    #                 return user_data
+    #         return None
+    #     except redis.ConnectionError:
+    #         self.connect_redis()
+    #         return False
+
+
+
+        
+    def get_user_data(self, user_id):
+        data = self.redis_client.get(f'user:{user_id}')
+        return json.loads(data) if data else None
+    
+    def set_user_data(self, user_id, data):
+        self.redis_client.set(f'user:{user_id}', json.dumps(data))
+    
+    def get_pair_data(self, pair_id):
+        data = self.redis_client.get(f'pair:{pair_id}')
+        return json.loads(data) if data else None
+    
+    def set_pair_data(self, pair_id, data):
+        self.redis_client.set(f'pair:{pair_id}', json.dumps(data))
+    
+    def get_all_pairs(self):
+        """Получить все пары"""
+        pairs = []
+        for key in self.redis_client.scan_iter('pair:*'):
+            if isinstance(key, bytes):
+                key_str = key.decode('utf-8')
+            else:
+                key_str = str(key)
+            
+            pair_id = key_str.split(':', 1)[1] if ':' in key_str else key_str
+            pair_data = self.get_pair_data(pair_id)
+
+            if pair_data:
+                pairs.append(pair_data)
+        
+        return pairs
+    
+    def get_user_by_username(self, username):
+        """Найти пользователя по username"""
+        username = username.lower().replace('@', '')
+        for key in self.redis_client.scan_iter('user:*'):
+            user_data = json.loads(self.redis_client.get(key))
+            if user_data.get('username', '').lower().replace('@', '') == username:
+                return user_data
+        return None
     
     def get_random_theme(self):
         """Выбор случайной темы для свидания"""
@@ -700,16 +698,30 @@ class MonthlyMeetBot:
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
         
         if hasattr(application, 'job_queue') and application.job_queue:
+            
+            application.job_queue.run_monthly(
+                self.connect_redis,
+                when=time(hour=5, minute=50),
+                day=1,
+                name="monthly_planning"
+            )
+            
             application.job_queue.run_monthly(
                 self.monthly_planning,
                 when=time(hour=5, minute=55),
                 day=1,
                 name="monthly_planning"
             )
+
+            application.job_queue.run_daily(
+                self.connect_redis,
+                time=time(hour=20, minute=0),
+                name="daily_notification_check"
+            )
             
             application.job_queue.run_daily(
                 self.check_and_send_pending_notifications,
-                time=time(hour=6, minute=0),
+                time=time(hour=20, minute=1),
                 name="daily_notification_check"
             )
             
