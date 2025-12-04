@@ -712,7 +712,7 @@ class MonthlyMeetBot:
             
             application.job_queue.run_monthly(
                 self.keep_redis_awake,
-                when=time(hour=5, minute=50),
+                when=time(hour=5, minute=54),
                 day=1,
                 name="ping_monthly_planning"
             )
@@ -726,13 +726,13 @@ class MonthlyMeetBot:
 
             application.job_queue.run_daily(
                 self.keep_redis_awake,
-                time=time(hour=20, minute=15),
+                time=time(hour=5, minute=59),
                 name="ping_daily_notification_check"
             )
             
             application.job_queue.run_daily(
                 self.check_and_send_pending_notifications,
-                time=time(hour=20, minute=16),
+                time=time(hour=6, minute=0),
                 name="daily_notification_check"
             )
             
