@@ -58,24 +58,6 @@ class MonthlyMeetBot:
         )
         self.connect_redis()
         
-        # try:
-        #     print(f"🔄 Попытка подключения...")
-
-        #     parsed = redis.connection.parse_url(self.redis_url)
-        #     self.redis_client = redis.Redis(
-        #         host=parsed['host'],
-        #         port=parsed['port'],
-        #         password=parsed.get('password'),
-        #         ssl=False,
-        #         decode_responses=True
-        #     )
-
-        #     self.redis_client.ping()
-        #     print("✅ Redis Cloud подключен успешно!")
-            
-        # except Exception as e:
-        #     print(f"❌ Ошибка Redis: {e}")
-        
     def connect_redis(self):
         try:
             self.redis_client.ping()
@@ -93,102 +75,6 @@ class MonthlyMeetBot:
             logger.warning(f"⚠️ Redis ping failed: {e}")
             self.connect_redis()
             return False
-
-    # def ensure_redis_connection(self):
-    #     if not self.redis_client:
-    #         logger.warning("⚠️ Соединение с Redis потеряно, переподключаемся...")
-    #         self.connect_redis()
-    #         return False
-        
-    #     self.redis_client.ping()
-    #     return True
-    
-
-    # def get_user_data(self, user_id):
-    #     if not self.ensure_redis_connection():
-    #         logger.error("❌ Нет соединения с Redis")
-    #         return None
-        
-    #     try:
-    #         data = self.redis_client.get(f'user:{user_id}')
-    #         return json.loads(data) if data else None
-    #     except redis.ConnectionError:
-    #         self.connect_redis()
-    #         return None
-
-    # def set_user_data(self, user_id, data):
-    #     if not self.ensure_redis_connection():
-    #         return False
-        
-    #     try:
-    #         self.redis_client.set(f'user:{user_id}', json.dumps(data))
-    #         return True
-    #     except redis.ConnectionError:
-    #         self.connect_redis()
-    #         return False
-
-    # def get_pair_data(self, pair_id):
-    #     if not self.ensure_redis_connection():
-    #         return None
-        
-    #     try:
-    #         data = self.redis_client.get(f'pair:{pair_id}')
-    #         return json.loads(data) if data else None
-    #     except redis.ConnectionError:
-    #         self.connect_redis()
-    #         return None
-
-    # def set_pair_data(self, pair_id, data):
-    #     if not self.ensure_redis_connection():
-    #         return False
-        
-    #     try:
-    #         self.redis_client.set(f'pair:{pair_id}', json.dumps(data))
-    #         return True
-    #     except redis.ConnectionError:
-    #         self.connect_redis()
-    #         return False
-
-    # def get_all_pairs(self):
-    #     if not self.ensure_redis_connection():
-    #         return []
-        
-    #     pairs = []
-    #     try:
-    #         for key in self.redis_client.scan_iter('pair:*'):
-    #             if isinstance(key, bytes):
-    #                 key_str = key.decode('utf-8')
-    #             else:
-    #                 key_str = str(key)
-                
-    #             pair_id = key_str.split(':', 1)[1] if ':' in key_str else key_str
-    #             pair_data = self.get_pair_data(pair_id)
-
-    #             if pair_data:
-    #                 pairs.append(pair_data)
-            
-    #         return pairs
-    #     except redis.ConnectionError:
-    #         self.connect_redis()
-    #         return []
-        
-    # def get_user_by_username(self, username):
-    #     if not self.ensure_redis_connection():
-    #         return None
-        
-    #     try:
-    #         username = username.lower().replace('@', '')
-    #         for key in self.redis_client.scan_iter('user:*'):
-    #             user_data = json.loads(self.redis_client.get(key))
-    #             if user_data.get('username', '').lower().replace('@', '') == username:
-    #                 return user_data
-    #         return None
-    #     except redis.ConnectionError:
-    #         self.connect_redis()
-    #         return False
-
-
-
         
     def get_user_data(self, user_id):
         data = self.redis_client.get(f'user:{user_id}')
@@ -625,7 +511,7 @@ class MonthlyMeetBot:
         meeting_date = datetime(current_date.year, current_date.month, selected_day)
         
         notification_date = meeting_date - timedelta(days=3)
-        notification_date = notification_date.replace(hour=9, minute=0, second=0, microsecond=0)
+        notification_date = notification_date.replace(hour=8, minute=59, second=0, microsecond=0)
         
         return notification_date
 
@@ -669,11 +555,7 @@ class MonthlyMeetBot:
 
     async def check_and_send_pending_notifications(self, context: ContextTypes.DEFAULT_TYPE):
         """Проверяет и отправляет уведомления, которые должны были быть отправлены"""
-        try:
-            # if not self.ensure_redis_connection():
-            #     logger.error("❌ Не удалось подключиться к Redis, пропускаем проверку")
-            #     return
-            
+        try:            
             now = datetime.now()
             logger.info(f"🔍 Проверка ожидающих уведомлений: {now}")
             
@@ -712,22 +594,16 @@ class MonthlyMeetBot:
             
             application.job_queue.run_monthly(
                 self.keep_redis_awake,
-                when=time(hour=5, minute=54),
+                when=time(hour=5, minute=57),
                 day=1,
-                name="ping_monthly_planning"
+                name="ping_daily"
             )
             
             application.job_queue.run_monthly(
                 self.monthly_planning,
-                when=time(hour=5, minute=55),
+                when=time(hour=5, minute=58),
                 day=1,
                 name="monthly_planning"
-            )
-
-            application.job_queue.run_daily(
-                self.keep_redis_awake,
-                time=time(hour=5, minute=59),
-                name="ping_daily_notification_check"
             )
             
             application.job_queue.run_daily(
