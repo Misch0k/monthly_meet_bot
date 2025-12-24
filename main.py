@@ -592,10 +592,9 @@ class MonthlyMeetBot:
         
         if hasattr(application, 'job_queue') and application.job_queue:
             
-            application.job_queue.run_monthly(
+            application.job_queue.run_daily(
                 self.keep_redis_awake,
                 when=time(hour=5, minute=57),
-                day=1,
                 name="ping_daily"
             )
             
