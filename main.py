@@ -594,7 +594,7 @@ class MonthlyMeetBot:
             
             application.job_queue.run_daily(
                 self.keep_redis_awake,
-                when=time(hour=5, minute=57),
+                time=time(hour=5, minute=57),
                 name="ping_daily"
             )
             
