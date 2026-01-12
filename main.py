@@ -572,8 +572,10 @@ class MonthlyMeetBot:
                             await self.send_scheduled_notification(context, pair_data['id'])
                             sent_count += 1
 
-                        logger.info(f"now: {now}")
-                        logger.info(f"notification_date: {notification_date}")
+                notification_date_str = pair_data.get('notification_date')
+                notification_date = datetime.fromisoformat(notification_date_str)
+                logger.info(f"now: {now}")
+                logger.info(f"notification_date: {notification_date}")
             
             logger.info(f"📨 Отправлено отложенных уведомлений: {sent_count}")
             
