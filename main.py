@@ -511,7 +511,7 @@ class MonthlyMeetBot:
         meeting_date = datetime(current_date.year, current_date.month, selected_day)
         
         notification_date = meeting_date - timedelta(days=3)
-        notification_date = notification_date.replace(hour=8, minute=59, second=0, microsecond=0)
+        notification_date = notification_date.replace(hour=5, minute=59, second=0, microsecond=0)
         
         return notification_date
 
@@ -571,11 +571,6 @@ class MonthlyMeetBot:
                         if now >= notification_date:
                             await self.send_scheduled_notification(context, pair_data['id'])
                             sent_count += 1
-
-                notification_date_str = pair_data.get('notification_date')
-                notification_date = datetime.fromisoformat(notification_date_str)
-                logger.info(f"now: {now}")
-                logger.info(f"notification_date: {notification_date}")
             
             logger.info(f"📨 Отправлено отложенных уведомлений: {sent_count}")
             
